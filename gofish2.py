@@ -212,6 +212,9 @@ def load_sgf(buf):
 
 	# Always returns at least 1 game; or throws if it cannot.
 
+	if type(buf) is str:
+		buf = bytearray(buf.encode(encoding="utf-8", errors="replace"))
+
 	ret = []
 	off = 0
 
