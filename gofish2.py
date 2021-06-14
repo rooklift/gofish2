@@ -220,6 +220,9 @@ def load_sgf(buf):
 
 	while True:
 
+		if len(buf) - off < 3:
+			break
+
 		try:
 			o = load_sgf_recursive(buf, off, None)
 			ret.append(o.root)
@@ -229,9 +232,6 @@ def load_sgf(buf):
 				break
 			else:
 				raise ParserFail
-
-		if len(buf) - off < 3:
-			break
 
 	if len(ret) == 0:
 		raise ParserFail
