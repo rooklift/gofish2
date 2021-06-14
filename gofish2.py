@@ -254,9 +254,9 @@ def load_sgf_recursive(buf, off, parent_of_local_root):
 		c = buf[i]
 
 		if not tree_started:
-			if c <= ord(" "):
+			if c <= 32:
 				continue
-			elif c == ord("("):
+			elif c == 40:								# (
 				tree_started = True
 				continue
 			else:
@@ -268,10 +268,10 @@ def load_sgf_recursive(buf, off, parent_of_local_root):
 				value.append(buf[i])
 				escape_flag = False
 				continue
-			elif c == ord("\\"):
+			elif c == 92:								# \
 				escape_flag = True
 				continue
-			elif c == ord("]"):
+			elif c == 93:								# ]
 				inside_value = False
 				if not node:
 					raise ParserFail
@@ -283,9 +283,9 @@ def load_sgf_recursive(buf, off, parent_of_local_root):
 
 		else:
 
-			if c <= ord(" ") or (c >= ord("a") and c <= ord("z")):
+			if c <= 32 or (c >= 97 and c <= 122):		# a-z
 				continue
-			elif c == ord("["):
+			elif c == 91:								# [
 				if not node:
 					node = Node(parent_of_local_root)
 					root = node
@@ -297,17 +297,17 @@ def load_sgf_recursive(buf, off, parent_of_local_root):
 				if (key == b'B' or key == b'W') and ("B" in node.props or "W" in node.props):
 					raise ParserFail
 				continue
-			elif c == ord("("):
+			elif c == 40:								# (
 				if not node:
 					raise ParserFail
 				chars_to_skip = load_sgf_recursive(buf, i, node).readcount
 				i += chars_to_skip - 1	# Subtract 1: the ( character we have read is also counted by the recurse.
 				continue
-			elif c == ord(")"):
+			elif c == 41:								# )
 				if not root:
 					raise ParserFail
 				return ParseResult(root = root, readcount = i + 1 - off)
-			elif c == ord(";"):
+			elif c == 59:								# ;
 				if not node:
 					node = Node(parent_of_local_root)
 					root = node
@@ -316,7 +316,7 @@ def load_sgf_recursive(buf, off, parent_of_local_root):
 				key = bytearray()
 				keycomplete = False
 				continue
-			elif c >= ord("A") and c <= ord("Z"):
+			elif c >= 65 and c <= 90:					# A-Z
 				if keycomplete:
 					key = bytearray()
 					keycomplete = False
