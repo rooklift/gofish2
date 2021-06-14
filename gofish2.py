@@ -140,6 +140,7 @@ class Node:
 		return dyer_string
 
 	def move_coords(self):          # A pass causes None to be returned.
+
 		for key in ["B", "W"]:
 			if key in self.props:
 				movestring = self.props[key][0]
