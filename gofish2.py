@@ -18,7 +18,7 @@ class Node:
 			parent.children.append(self)
 
 	@property
-	def width(self):		# FIXME
+	def width(self):
 
 		if self.__board:
 			return self.__board.width
@@ -26,13 +26,21 @@ class Node:
 		root = self.get_root()
 		sz = root.get_value("SZ")
 
+		if sz == None:
+			return 19
+
+		if ":" in sz:
+			width_string = sz.split(":")[0]
+		else:
+			width_string = sz
+
 		try:
-			return int(sz)
+			return int(width_string)
 		except:
 			return 19
 
 	@property
-	def height(self):		# FIXME
+	def height(self):
 
 		if self.__board:
 			return self.__board.height
@@ -40,8 +48,16 @@ class Node:
 		root = self.get_root()
 		sz = root.get_value("SZ")
 
+		if sz == None:
+			return 19
+
+		if ":" in sz:
+			height_string = sz.split(":")[1]
+		else:
+			height_string = sz
+
 		try:
-			return int(sz)
+			return int(height_string)
 		except:
 			return 19
 
