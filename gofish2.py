@@ -23,7 +23,7 @@ class Node:
 		if self.__board:
 			return self.__board.width
 
-		root = self.get_root_node()
+		root = self.get_root()
 		sz = root.get_value("SZ")
 
 		try:
@@ -37,7 +37,7 @@ class Node:
 		if self.__board:
 			return self.__board.height
 
-		root = self.get_root_node()
+		root = self.get_root()
 		sz = root.get_value("SZ")
 
 		try:
@@ -45,7 +45,7 @@ class Node:
 		except:
 			return 19
 
-	def get_root_node(self):
+	def get_root(self):
 
 		node = self
 		while True:
@@ -116,7 +116,7 @@ class Node:
 
 	def dyer(self):
 
-		node = self.get_root_node()
+		node = self.get_root()
 		dyer = {20: "??", 40: "??", 60: "??", 31: "??", 51: "??", 71: "??"}
 
 		move_count = 0;
@@ -152,6 +152,27 @@ class Node:
 					return None
 				return (x, y)
 		return None
+
+	def subtree_size(self):			# Including self
+
+		node = self
+		n = 0
+
+		while True:
+
+			n += 1
+
+			if len(node.children) == 0:
+				return n
+			elif len(node.children) == 1:
+				node = node.children[0]
+			else:
+				for child in node.children:
+					n += child.subtree_size()
+				return n
+
+	def tree_size(self):
+		return self.get_root().subtree_size()
 
 
 class ParseResult:
