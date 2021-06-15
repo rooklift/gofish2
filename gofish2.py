@@ -571,7 +571,7 @@ def save(filename, node):
 
 def write_tree(outfile, node):
 	outfile.write("(")
-	while 1:
+	while True:
 		outfile.write(";")
 		for key in node.props:
 			outfile.write(key)
