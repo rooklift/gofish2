@@ -24,7 +24,7 @@ class Node:
 			return self.__board.width
 
 		root = self.get_root()
-		sz = root.get_value("SZ")
+		sz = root.get("SZ")
 
 		if sz == None:
 			return 19
@@ -46,7 +46,7 @@ class Node:
 			return self.__board.height
 
 		root = self.get_root()
-		sz = root.get_value("SZ")
+		sz = root.get("SZ")
 
 		if sz == None:
 			return 19
@@ -69,7 +69,7 @@ class Node:
 				return node
 			node = node.parent
 
-	def set_value(self, key, value):
+	def set(self, key, value):
 
 		key = str(key)
 		value = str(value)
@@ -77,7 +77,7 @@ class Node:
 
 		self.props[key] = [value]
 
-	def get_value(self, key):
+	def get(self, key):
 
 		key = str(key)
 
