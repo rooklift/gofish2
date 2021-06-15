@@ -45,6 +45,9 @@ class Board:
 				print(char, end = " ")
 			print()
 
+		print("Captures: {} by Black - {} by White".format(self.caps_by_b, self.caps_by_w))
+		print("Next to play: {}".format("Black" if self.active == "b" else "White"))
+
 
 	def state_at(self, s):
 		x, y = s_to_xy(s)
@@ -552,7 +555,40 @@ def xy_to_s(x, y):
 
 	return s
 
+
+def safe_string(s):     				# "safe" meaning safely escaped \ and ] characters
+	s = s.replace("\\", "\\\\")
+	s = s.replace("]", "\\]")
+	return s
+
 # -------------------------------------------------------------------------------------------------
+
+def save(filename, node):
+	root = node.get_root()
+	with open(filename, "w", encoding="utf-8") as outfile:
+		write_tree(outfile, root)
+
+
+def write_tree(outfile, node):
+	outfile.write("(")
+	while 1:
+		outfile.write(";")
+		for key in node.props:
+			outfile.write(key)
+			for value in node.props[key]:
+				outfile.write("[{}]".format(safe_string(value)))
+		if len(node.children) > 1:
+			for child in node.children:
+				write_tree(outfile, child)
+			break
+		elif len(node.children) == 1:
+			node = node.children[0]
+			continue
+		else:
+			break
+	outfile.write(")")
+	return
+
 
 def load(filename):
 
