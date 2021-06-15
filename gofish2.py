@@ -36,9 +36,12 @@ class Board:
 
 
 	def dump(self):
+
+		ko_x, ko_y = s_to_xy(self.ko)
+
 		for y in range(0, self.height):
 			for x in range(0, self.width):
-				char = "X" if self.state[x][y] == "b" else "O" if self.state[x][y] == "w" else "."
+				char = "X" if self.state[x][y] == "b" else "O" if self.state[x][y] == "w" else " " if (ko_x == x and ko_y == y) else "."
 				print(char, end = " ")
 			print()
 
@@ -157,11 +160,11 @@ class Board:
 		return False
 
 
-	def legalmove(self, s):
-		return self.legalmove_colour(s, self.active)
+	def legal_move(self, s):
+		return self.legal_move_colour(s, self.active)
 
 
-	def legalmove_colour(self, s, colour):		# Note: does not consider passes as "legal moves".
+	def legal_move_colour(self, s, colour):		# Note: does not consider passes as "legal moves".
 
 		assert(colour == "b" or colour == "w")
 
