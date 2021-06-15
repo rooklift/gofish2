@@ -229,57 +229,6 @@ class Board:
 			if self.one_liberty_singleton(s):
 				self.ko = self.ko_square_finder(s)
 
-
-
-# -------------------------------------------------------------------------------------------------
-
-def s_to_xy(s):
-
-	if not isinstance(s, str):
-		return (-1, -1)
-
-	if len(s) != 2:
-		return (-1, -1)
-
-	x_ascii = ord(s[0])
-	y_ascii = ord(s[1])
-
-	if x_ascii >= 97 and x_ascii <= 122:
-		x = x_ascii - 97
-	elif x_ascii >= 65 and x_ascii <= 90:
-		x = x_ascii - 65 + 26
-	else:
-		return (-1, -1)
-
-	if y_ascii >= 97 and y_ascii <= 122:
-		y = y_ascii - 97
-	elif y_ascii >= 65 and y_ascii <= 90:
-		y = y_ascii - 65 + 26
-	else:
-		return (-1, -1)
-
-	return (x, y)
-
-
-def xy_to_s(x, y):
-
-	assert(x >= 0 and x < 52 and y >= 0 and y < 52)
-
-	s = ""
-
-	if x < 26:
-		s += chr(x + 97)
-	else:
-		s += chr(x + 65 - 26)
-
-	if y < 26:
-		s += chr(y + 97)
-	else:
-		s += chr(y + 65 - 26)
-
-	return s
-
-
 # -------------------------------------------------------------------------------------------------
 
 class Node:
@@ -551,6 +500,54 @@ class Node:
 
 	def tree_size(self):
 		return self.get_root().subtree_size()
+
+# -------------------------------------------------------------------------------------------------
+
+def s_to_xy(s):
+
+	if not isinstance(s, str):
+		return (-1, -1)
+
+	if len(s) != 2:
+		return (-1, -1)
+
+	x_ascii = ord(s[0])
+	y_ascii = ord(s[1])
+
+	if x_ascii >= 97 and x_ascii <= 122:
+		x = x_ascii - 97
+	elif x_ascii >= 65 and x_ascii <= 90:
+		x = x_ascii - 65 + 26
+	else:
+		return (-1, -1)
+
+	if y_ascii >= 97 and y_ascii <= 122:
+		y = y_ascii - 97
+	elif y_ascii >= 65 and y_ascii <= 90:
+		y = y_ascii - 65 + 26
+	else:
+		return (-1, -1)
+
+	return (x, y)
+
+
+def xy_to_s(x, y):
+
+	assert(x >= 0 and x < 52 and y >= 0 and y < 52)
+
+	s = ""
+
+	if x < 26:
+		s += chr(x + 97)
+	else:
+		s += chr(x + 65 - 26)
+
+	if y < 26:
+		s += chr(y + 97)
+	else:
+		s += chr(y + 65 - 26)
+
+	return s
 
 # -------------------------------------------------------------------------------------------------
 
