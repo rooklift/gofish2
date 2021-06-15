@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 
-
 class ParserFail(Exception):
 	pass
 
+class ParseResult:
+	def __init__(self, root, readcount):
+		self.root = root
+		self.readcount = readcount
+
+# -------------------------------------------------------------------------------------------------
 
 class Node:
 
@@ -16,6 +21,7 @@ class Node:
 
 		if parent:
 			parent.children.append(self)
+
 
 	@property
 	def width(self):
@@ -39,6 +45,7 @@ class Node:
 		except:
 			return 19
 
+
 	@property
 	def height(self):
 
@@ -61,6 +68,7 @@ class Node:
 		except:
 			return 19
 
+
 	def get_root(self):
 
 		node = self
@@ -68,6 +76,7 @@ class Node:
 			if not node.parent:
 				return node
 			node = node.parent
+
 
 	def set(self, key, value):
 
@@ -77,6 +86,7 @@ class Node:
 
 		self.props[key] = [value]
 
+
 	def get(self, key):
 
 		key = str(key)
@@ -84,6 +94,7 @@ class Node:
 		if key not in self.props:
 			return None
 		return self.props[key][0]
+
 
 	def add_value(self, key, value):
 
@@ -95,11 +106,13 @@ class Node:
 			self.props[key] = []
 		self.props[key].append(value)
 
+
 	def add_value_fast(self, key, value):
 
 		if key not in self.props:
 			self.props[key] = []
 		self.props[key].append(value)
+
 
 	def delete_key(self, key):
 
@@ -108,10 +121,12 @@ class Node:
 
 		self.props.pop(key, None)
 
+
 	def mutor_check(self, key):		# These are board-altering keys and so we must clear any board caches recursively
 
 		if key in ["B", "W", "AB", "AW", "AE", "PL", "SZ"]:
 			self.clear_board_recursive()
+
 
 	def clear_board_recursive(self):
 
@@ -129,6 +144,7 @@ class Node:
 				for child in node.children:
 					child.clear_board_recursive()
 				break
+
 
 	def dyer(self):
 
@@ -155,6 +171,7 @@ class Node:
 		dyer_string = dyer[20] + dyer[40] + dyer[60] + dyer[31] + dyer[51] + dyer[71]
 		return dyer_string
 
+
 	def move_coords(self):          # A pass causes None to be returned.
 
 		for key in ["B", "W"]:
@@ -168,6 +185,7 @@ class Node:
 					return None
 				return (x, y)
 		return None
+
 
 	def subtree_size(self):			# Including self
 
@@ -187,16 +205,11 @@ class Node:
 					n += child.subtree_size()
 				return n
 
+
 	def tree_size(self):
 		return self.get_root().subtree_size()
 
-
-class ParseResult:
-
-	def __init__(self, root, readcount):
-		self.root = root
-		self.readcount = readcount
-
+# -------------------------------------------------------------------------------------------------
 
 def load(filename):
 
