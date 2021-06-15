@@ -148,20 +148,25 @@ class Node:
 
 	def dyer(self):
 
-		node = self.get_root()
+		root = self.get_root()
+		node = root
 		dyer = {20: "??", 40: "??", 60: "??", 31: "??", 51: "??", 71: "??"}
-
 		move_count = 0;
 
 		while True:
 
-			if "B" in node.props or "W" in node.props:
+			s = None
+			if "B" in node.props:
+				s = node.props["B"][0]
+			elif "W" in node.props:
+				s = node.props["W"][0]
 
+			if s != None:
 				move_count += 1
 				if move_count in [20, 40, 60, 31, 51, 71]:
-					mv = node.move_coords()
-					if mv:
-						dyer[move_count] = chr(mv[0] + 97) + chr(mv[1] + 97)
+					p = root.validated_move_string(s)
+					if p:
+						dyer[move_count] = p
 
 			if (len(node.children) == 0 or move_count >= 71):
 				break
@@ -172,19 +177,34 @@ class Node:
 		return dyer_string
 
 
-	def move_coords(self):          # A pass causes None to be returned.
+	def validated_move_string(self, s):
 
-		for key in ["B", "W"]:
-			if key in self.props:
-				movestring = self.props[key][0]
-				if len(movestring) != 2:
-					return None
-				x = ord(movestring[0]) - 97
-				y = ord(movestring[1]) - 97
-				if x < 0 or x >= self.width or y < 0 or y >= self.height:
-					return None
-				return (x, y)
-		return None
+		# Returns s if s is an on-board SGF string, otherwise returns ""
+
+		if len(s) != 2:
+			return ""
+
+		x_ascii = ord(s[0])
+		y_ascii = ord(s[1])
+
+		if x_ascii >= 97 and x_ascii <= 122:
+			x = x_ascii - 97
+		elif x_ascii >= 65 and x_ascii <= 90:
+			x = x_ascii - 65 + 26
+		else:
+			return ""
+
+		if y_ascii >= 97 and y_ascii <= 122:
+			y = y_ascii - 97
+		elif y_ascii >= 65 and y_ascii <= 90:
+			y = y_ascii - 65 + 26
+		else:
+			return ""
+
+		if x >= 0 and x < self.width and y >= 0 and y < self.height:
+			return s
+		else:
+			return ""
 
 
 	def subtree_size(self):			# Including self
