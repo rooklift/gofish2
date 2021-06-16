@@ -1,3 +1,3 @@
 # gofish2
 
-Unfinished replacement for the original [gofish](https://github.com/rooklift/gofish) library.
+Replacement for the original [gofish](https://github.com/rooklift/gofish) library. It does what I need and is much simpler...
