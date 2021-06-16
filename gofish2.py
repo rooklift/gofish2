@@ -355,7 +355,7 @@ class Node:
 
 		key = str(key)
 		value = str(value)
-		self.mutor_check(key)
+		self._mutor_check(key)
 
 		self.props[key] = [value]
 
@@ -382,7 +382,7 @@ class Node:
 
 		key = str(key)
 		value = str(value)
-		self.mutor_check(key)
+		self._mutor_check(key)
 
 		if key not in self.props:
 			self.props[key] = []
@@ -399,12 +399,12 @@ class Node:
 	def delete_key(self, key):
 
 		key = str(key)
-		self.mutor_check(key)
+		self._mutor_check(key)
 
 		self.props.pop(key, None)
 
 
-	def mutor_check(self, key):		# If we had board caches, these properties would require a recursive cache clear
+	def _mutor_check(self, key):	# If we had board caches, these properties would require a recursive cache clear
 
 		if key in ["B", "W", "AB", "AW", "AE", "PL", "SZ"]:
 			pass 					# self.clear_board_recursive()
@@ -463,6 +463,9 @@ class Node:
 	def validated_move_string(self, s):
 
 		# Returns s if s is an on-board SGF string, otherwise returns ""
+
+		if not isinstance(s, str):
+			return ""
 
 		if len(s) != 2:
 			return ""
@@ -571,10 +574,10 @@ def safe_string(s):     				# "safe" meaning safely escaped \ and ] characters
 def save(filename, node):
 	root = node.get_root()
 	with open(filename, "w", encoding="utf-8") as outfile:
-		write_tree(outfile, root)
+		_write_tree(outfile, root)
 
 
-def write_tree(outfile, node):
+def _write_tree(outfile, node):
 	outfile.write("(")
 	while True:
 		outfile.write(";")
@@ -584,7 +587,7 @@ def write_tree(outfile, node):
 				outfile.write("[{}]".format(safe_string(value)))
 		if len(node.children) > 1:
 			for child in node.children:
-				write_tree(outfile, child)
+				_write_tree(outfile, child)
 			break
 		elif len(node.children) == 1:
 			node = node.children[0]
@@ -617,7 +620,7 @@ def load_sgf(buf):
 
 	while len(buf) - off >= 3:
 		try:
-			o = load_sgf_recursive(buf, off, None)
+			o = _load_sgf_recursive(buf, off, None)
 			ret.append(o.root)
 			off += o.readcount
 		except:
@@ -632,7 +635,7 @@ def load_sgf(buf):
 	return ret
 
 
-def load_sgf_recursive(buf, off, parent_of_local_root):
+def _load_sgf_recursive(buf, off, parent_of_local_root):
 
 	root = None
 	node = None
@@ -697,7 +700,7 @@ def load_sgf_recursive(buf, off, parent_of_local_root):
 			elif c == 40:								# (
 				if not node:
 					raise ParserFail("New subtree started but node was None")
-				chars_to_skip = load_sgf_recursive(buf, i, node).readcount
+				chars_to_skip = _load_sgf_recursive(buf, i, node).readcount
 				i += chars_to_skip - 1	# Subtract 1: the ( character we have read is also counted by the recurse.
 				continue
 			elif c == 41:								# )
