@@ -525,7 +525,8 @@ def s_to_xy(s):
 
 def xy_to_s(x, y):
 
-	assert(x >= 0 and x < 52 and y >= 0 and y < 52)
+	if x < 0 or x >= 52 or y < 0 or y >= 52:
+		return ""
 
 	s = ""
 
