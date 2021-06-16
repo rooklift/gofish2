@@ -623,10 +623,10 @@ def load_sgf(buf):
 			if len(ret) > 0:
 				break
 			else:
-				raise ParserFail
+				raise
 
 	if len(ret) == 0:
-		raise ParserFail
+		raise ParserFail("Found no game")
 
 	return ret
 
@@ -656,7 +656,7 @@ def load_sgf_recursive(buf, off, parent_of_local_root):
 				tree_started = True
 				continue
 			else:
-				raise ParserFail
+				raise ParserFail("Unexpected byte before (")
 
 		if inside_value:
 
@@ -670,7 +670,7 @@ def load_sgf_recursive(buf, off, parent_of_local_root):
 			elif c == 93:								# ]
 				inside_value = False
 				if not node:
-					raise ParserFail
+					raise ParserFail("Value ended by ] but node was None")
 				node.add_value_fast(key.decode(encoding="utf-8", errors="replace"), value.decode(encoding="utf-8", errors="replace"))
 				continue
 			else:
@@ -689,19 +689,19 @@ def load_sgf_recursive(buf, off, parent_of_local_root):
 				inside_value = True
 				keycomplete = True
 				if len(key) == 0:
-					raise ParserFail
+					raise ParserFail("Value started by [ but key was empty")
 				if (key == b'B' or key == b'W') and ("B" in node.props or "W" in node.props):
-					raise ParserFail
+					raise ParserFail("Multiple moves in node")
 				continue
 			elif c == 40:								# (
 				if not node:
-					raise ParserFail
+					raise ParserFail("New subtree started but node was None")
 				chars_to_skip = load_sgf_recursive(buf, i, node).readcount
 				i += chars_to_skip - 1	# Subtract 1: the ( character we have read is also counted by the recurse.
 				continue
 			elif c == 41:								# )
 				if not root:
-					raise ParserFail
+					raise ParserFail("Subtree ended but local root was None")
 				return ParseResult(root = root, readcount = i + 1 - off)
 			elif c == 59:								# ;
 				if not node:
@@ -719,8 +719,8 @@ def load_sgf_recursive(buf, off, parent_of_local_root):
 				key.append(c)
 				continue
 			else:
-				raise ParserFail
+				raise ParserFail("Unacceptable byte while expecting key")
 
-	raise ParserFail
+	raise ParserFail("Reached end of input")
 
 
