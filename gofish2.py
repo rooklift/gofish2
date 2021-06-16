@@ -64,25 +64,6 @@ class Board:
 			self.state[x][y] = colour
 
 
-	def _one_liberty_singleton(self, s):
-
-		colour = self.state_at(s)
-
-		if not colour:
-			return False
-
-		liberties = 0
-
-		for neighbour in self.neighbours(s):
-			neighbour_colour = self.state_at(neighbour)
-			if neighbour_colour == colour:
-				return False
-			if not neighbour_colour:
-				liberties += 1
-
-		return liberties == 1
-
-
 	def neighbours(self, s):
 		x, y = s_to_xy(s)
 		if x < 0 or x >= self.width or y < 0 or y >= self.height:
@@ -97,15 +78,6 @@ class Board:
 		if y > 0:
 			ret.append(xy_to_s(x, y - 1))
 		return ret
-
-
-	def _ko_square_finder(self, s):
-
-		for neighbour in self.neighbours(s):
-			if not self.state_at(neighbour):
-				return neighbour
-
-		return None
 
 
 	def destroy_group(self, s):
@@ -234,6 +206,34 @@ class Board:
 		if caps == 1:
 			if self._one_liberty_singleton(s):
 				self.ko = self._ko_square_finder(s)
+
+
+	def _one_liberty_singleton(self, s):
+
+		colour = self.state_at(s)
+
+		if not colour:
+			return False
+
+		liberties = 0
+
+		for neighbour in self.neighbours(s):
+			neighbour_colour = self.state_at(neighbour)
+			if neighbour_colour == colour:
+				return False
+			if not neighbour_colour:
+				liberties += 1
+
+		return liberties == 1
+
+
+	def _ko_square_finder(self, s):
+
+		for neighbour in self.neighbours(s):
+			if not self.state_at(neighbour):
+				return neighbour
+
+		return None
 
 # -------------------------------------------------------------------------------------------------
 
