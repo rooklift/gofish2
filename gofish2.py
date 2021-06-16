@@ -317,17 +317,9 @@ class Node:
 
 	def make_board(self):
 
-		node = self
-		history = []
+		history = self.history()
 
-		while node:
-			history.append(node)
-			node = node.parent
-
-		history.reverse()
-		root = history[0]
-
-		board = Board(root.width, root.height)
+		board = Board(history[0].width, history[0].height)
 
 		for node in history:
 			node.apply(board)
@@ -349,6 +341,19 @@ class Node:
 		while len(node.children) > 0:
 			node = node.children[0]
 		return node
+
+
+	def history(self):
+
+		node = self
+		ret = []
+
+		while node:
+			ret.append(node)
+			node = node.parent
+
+		ret.reverse()
+		return ret
 
 
 	def set(self, key, value):
