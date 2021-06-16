@@ -64,7 +64,7 @@ class Board:
 			self.state[x][y] = colour
 
 
-	def one_liberty_singleton(self, s):
+	def _one_liberty_singleton(self, s):
 
 		colour = self.state_at(s)
 
@@ -99,7 +99,7 @@ class Board:
 		return ret
 
 
-	def ko_square_finder(self, s):
+	def _ko_square_finder(self, s):
 
 		for neighbour in self.neighbours(s):
 			if not self.state_at(neighbour):
@@ -137,10 +137,10 @@ class Board:
 
 		touched = dict()
 
-		return self.has_liberties_recurse(s, touched)
+		return self._has_liberties_recurse(s, touched)
 
 
-	def has_liberties_recurse(self, s, touched):
+	def _has_liberties_recurse(self, s, touched):
 
 		touched[s] = True
 
@@ -157,7 +157,7 @@ class Board:
 				return True
 
 			if neighbour_colour == colour:
-				if self.has_liberties_recurse(neighbour, touched):
+				if self._has_liberties_recurse(neighbour, touched):
 					return True
 
 		return False
@@ -232,8 +232,8 @@ class Board:
 			self.destroy_group(s)
 
 		if caps == 1:
-			if self.one_liberty_singleton(s):
-				self.ko = self.ko_square_finder(s)
+			if self._one_liberty_singleton(s):
+				self.ko = self._ko_square_finder(s)
 
 # -------------------------------------------------------------------------------------------------
 
@@ -244,7 +244,6 @@ class Node:
 		self.parent = parent
 		self.children = []
 		self.props = dict()
-		self.__board = None
 
 		if parent:
 			parent.children.append(self)
@@ -252,9 +251,6 @@ class Node:
 
 	@property
 	def width(self):
-
-		if self.__board:
-			return self.__board.width
 
 		root = self.get_root()
 		sz = root.get("SZ")
@@ -276,9 +272,6 @@ class Node:
 	@property
 	def height(self):
 
-		if self.__board:
-			return self.__board.height
-
 		root = self.get_root()
 		sz = root.get("SZ")
 
@@ -296,40 +289,50 @@ class Node:
 			return 19
 
 
-	def make_board(self):								# Returns a copy in gofish2
-
-		if self.__board:
-			return self.__board.copy()
-
-		if not self.parent:
-			self.__board = Board(self.width, self.height)
-		else:
-			self.__board = self.parent.make_board()
+	def apply(self, board):
 
 		for s in self.all_values("AE"):
-			self.__board.set_at(s, "")
+			board.set_at(s, "")
 
 		for s in self.all_values("AB"):
-			self.__board.set_at(s, "b")
-			self.__board.active = "w"
+			board.set_at(s, "b")
+			board.active = "w"
 
 		for s in self.all_values("AW"):
-			self.__board.set_at(s, "w")
-			self.__board.active = "b"
+			board.set_at(s, "w")
+			board.active = "b"
 
 		for s in self.all_values("B"):
-			self.__board.play_move_or_pass(s, "b")		# Will treat s as a pass if it's not a valid move.
+			board.play_move_or_pass(s, "b")		# Will treat s as a pass if it's not a valid move.
 
 		for s in self.all_values("W"):
-			self.__board.play_move_or_pass(s, "w")		# Will treat s as a pass if it's not a valid move.
+			board.play_move_or_pass(s, "w")		# Will treat s as a pass if it's not a valid move.
 
 		pl = self.get("PL");
 		if pl == "B" or pl == "b":
-			self.__board.active = "b"
+			board.active = "b"
 		if pl == "W" or pl == "w":
-			self.__board.active = "w"
+			board.active = "w"
 
-		return self.__board.copy()
+
+	def make_board(self):
+
+		node = self
+		history = []
+
+		while node:
+			history.append(node)
+			node = node.parent
+
+		history.reverse()
+		root = history[0]
+
+		board = Board(root.width, root.height)
+
+		for node in history:
+			node.apply(board)
+
+		return board
 
 
 	def get_root(self):
@@ -401,12 +404,13 @@ class Node:
 		self.props.pop(key, None)
 
 
-	def mutor_check(self, key):		# These are board-altering keys and so we must clear any board caches recursively
+	def mutor_check(self, key):		# If we had board caches, these properties would require a recursive cache clear
 
 		if key in ["B", "W", "AB", "AW", "AE", "PL", "SZ"]:
-			self.clear_board_recursive()
+			pass 					# self.clear_board_recursive()
 
 
+	"""
 	def clear_board_recursive(self):
 
 		node = self
@@ -423,6 +427,7 @@ class Node:
 				for child in node.children:
 					child.clear_board_recursive()
 				break
+	"""
 
 
 	def dyer(self):
@@ -610,11 +615,7 @@ def load_sgf(buf):
 	ret = []
 	off = 0
 
-	while True:
-
-		if len(buf) - off < 3:
-			break
-
+	while len(buf) - off >= 3:
 		try:
 			o = load_sgf_recursive(buf, off, None)
 			ret.append(o.root)
