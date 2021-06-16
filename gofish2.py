@@ -264,7 +264,7 @@ class Node:
 			width_string = sz
 
 		try:
-			return int(width_string)
+			return min(int(width_string), 52)
 		except:
 			return 19
 
@@ -284,7 +284,7 @@ class Node:
 			height_string = sz
 
 		try:
-			return int(height_string)
+			return min(height_string, 52)
 		except:
 			return 19
 
