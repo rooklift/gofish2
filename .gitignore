@@ -3,3 +3,4 @@ __pycache__/*
 test.py
 file_info.py
 *.sgf
+*.ngf
