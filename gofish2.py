@@ -548,6 +548,41 @@ def safe_string(s):     				# "safe" meaning safely escaped \ and ] characters
 	s = s.replace("]", "\\]")
 	return s
 
+
+def handicap_stones(count, width, height, tygem = False):
+
+	# From the Sabaki project by Yichuan Shen, with modifications.
+	# https://github.com/SabakiHQ/go-board
+
+	if min(width, height) <= 6 or count < 2:
+		return []
+
+	nearx = 3 if width >= 13 else 2
+	neary = 3 if height >= 13 else 2
+	farx = width - nearx - 1
+	fary = height - neary - 1
+	middlex = (width - 1) // 2
+	middley = (height - 1) // 2
+
+	if tygem:
+		stones = [[nearx, fary], [farx, neary], [nearx, neary], [farx, fary]]
+	else:
+		stones = [[nearx, fary], [farx, neary], [farx, fary], [nearx, neary]]
+
+	if width % 2 != 0 and height % 2 != 0 and (width >= 9 or height >= 9):
+
+		if count == 5 or count == 7 or count >= 9:
+			stones.append([middlex, middley])
+
+		stones += [
+			[nearx, middley],
+			[farx, middley],
+			[middlex, neary],
+			[middlex, fary]
+		]
+
+	return [xy_to_s(z[0], z[1]) for z in stones[0:count]]
+
 # -------------------------------------------------------------------------------------------------
 
 def save(filename, node):
@@ -579,12 +614,18 @@ def _write_tree(outfile, node):
 
 def load(filename):
 
-	# Returns an array of roots (except load_sgf() will throw if it cannot get at least 1 root).
+	# This can throw.
+	# Otherwise, returns a non-empty array of roots.
 
 	with open(filename, "rb") as infile:
 		buf = infile.read()
 
-	return load_sgf(buf)
+	if filename.lower().endswith(".gib"):
+		return load_gib(buf)
+	elif filename.lower().endswith(".ngf"):
+		return load_ngf(buf)
+	else:
+		return load_sgf(buf)
 
 
 def load_sgf(buf):
