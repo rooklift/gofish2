@@ -1002,6 +1002,8 @@ def parse_gib_gametag(line):
 			try:
 				gongje = int(s[1:])
 				km = str(gongje / 10)
+				if km.endswith(".0"):
+					km = km[:-2]
 			except:
 				pass
 
