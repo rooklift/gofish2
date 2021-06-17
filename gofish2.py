@@ -93,7 +93,7 @@ class Board:
 		else:
 			self.caps_by_b += 1
 
-		caps = 1;
+		caps = 1
 
 		for neighbour in self.neighbours(s):
 			if self.state_at(neighbour) == colour:
@@ -308,7 +308,7 @@ class Node:
 		for s in self.all_values("W"):
 			board.play_move_or_pass(s, "w")		# Will treat s as a pass if it's not a valid move.
 
-		pl = self.get("PL");
+		pl = self.get("PL")
 		if pl == "B" or pl == "b":
 			board.active = "b"
 		if pl == "W" or pl == "w":
@@ -377,12 +377,12 @@ class Node:
 
 		key = str(key)
 
-		ret = [];
+		ret = []
 		if key not in self.props:
 			return ret
 		for value in self.props[key]:
 			ret.append(value)
-		return ret;
+		return ret
 
 
 	def add_value(self, key, value):
@@ -413,7 +413,7 @@ class Node:
 		root = self.get_root()
 		node = root
 		dyer = {20: "??", 40: "??", 60: "??", 31: "??", 51: "??", 71: "??"}
-		move_count = 0;
+		move_count = 0
 
 		while True:
 
@@ -753,14 +753,14 @@ def load_ngf(buf):
 	lines = buf.split(b"\n")
 
 	if len(lines) < 12:
-		raise ParserFail("NGF load error: file too short");
+		raise ParserFail("NGF load error: file too short")
 
 	# ---------------------------------------------------------------------------------------------
 
 	try:
 		boardsize = int(lines[1])
 	except:
-		boardsize = 19;
+		boardsize = 19
 
 	# ---------------------------------------------------------------------------------------------
 
@@ -808,8 +808,8 @@ def load_ngf(buf):
 
 	# ---------------------------------------------------------------------------------------------
 
-	re = "";
-	margin = "";
+	re = ""
+	margin = ""
 
 	result_lower = lines[10].decode(encoding="utf-8", errors="replace").lower()
 
@@ -830,12 +830,12 @@ def load_ngf(buf):
 	root = Node(None)
 	node = root
 
-	root.set("SZ", boardsize);
-	root.set("RU", "Korean");
-	root.set("KM", komi);
+	root.set("SZ", boardsize)
+	root.set("RU", "Korean")
+	root.set("KM", komi)
 
 	if handicap > 1:
-		root.set("HA", handicap);
+		root.set("HA", handicap)
 		for s in handicap_stones(handicap, boardsize, boardsize, True):
 			root.add_value("AB", s)
 
@@ -870,7 +870,7 @@ def load_ngf(buf):
 				x = line[5] - 66
 				y = line[6] - 66
 
-				node = Node(node);
+				node = Node(node)
 
 				if x >= 0 and x < boardsize and y >= 0 and y < boardsize:
 					node.set(key, xy_to_s(x, y))
