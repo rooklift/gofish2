@@ -650,7 +650,7 @@ def load_sgf(buf):
 				raise
 
 	if len(ret) == 0:
-		raise ParserFail("Found no game")
+		raise ParserFail("SGF load error: Found no game")
 
 	return ret
 
@@ -680,7 +680,7 @@ def _load_sgf_recursive(buf, off, parent_of_local_root):
 				tree_started = True
 				continue
 			else:
-				raise ParserFail("Unexpected byte before (")
+				raise ParserFail("SGF load error: Unexpected byte before (")
 
 		if inside_value:
 
@@ -694,7 +694,7 @@ def _load_sgf_recursive(buf, off, parent_of_local_root):
 			elif c == 93:								# ]
 				inside_value = False
 				if not node:
-					raise ParserFail("Value ended by ] but node was None")
+					raise ParserFail("SGF load error: Value ended by ] but node was None")
 				node.add_value_fast(key.decode(encoding="utf-8", errors="replace"), value.decode(encoding="utf-8", errors="replace"))
 				continue
 			else:
@@ -713,19 +713,19 @@ def _load_sgf_recursive(buf, off, parent_of_local_root):
 				inside_value = True
 				keycomplete = True
 				if len(key) == 0:
-					raise ParserFail("Value started by [ but key was empty")
+					raise ParserFail("SGF load error: Value started by [ but key was empty")
 				if (key == b'B' or key == b'W') and ("B" in node.props or "W" in node.props):
 					raise ParserFail("Multiple moves in node")
 				continue
 			elif c == 40:								# (
 				if not node:
-					raise ParserFail("New subtree started but node was None")
+					raise ParserFail("SGF load error: New subtree started but node was None")
 				chars_to_skip = _load_sgf_recursive(buf, i, node).readcount
 				i += chars_to_skip - 1	# Subtract 1: the ( character we have read is also counted by the recurse.
 				continue
 			elif c == 41:								# )
 				if not root:
-					raise ParserFail("Subtree ended but local root was None")
+					raise ParserFail("SGF load error: Subtree ended but local root was None")
 				return ParseResult(root = root, readcount = i + 1 - off)
 			elif c == 59:								# ;
 				if not node:
@@ -743,8 +743,142 @@ def _load_sgf_recursive(buf, off, parent_of_local_root):
 				key.append(c)
 				continue
 			else:
-				raise ParserFail("Unacceptable byte while expecting key")
+				raise ParserFail("SGF load error: Unacceptable byte while expecting key")
 
-	raise ParserFail("Reached end of input")
+	raise ParserFail("SGF load error: Reached end of input")
 
+
+def bytes_to_fields(buf):	# Split bytes, returning strings and filtering out empty strings (though maybe that is done by the split() anyway?)
+	return [z.decode(encoding="utf-8", errors="replace") for z in buf.split() if z != b""]
+
+
+def load_ngf(buf):
+
+	lines = buf.split(b"\n")
+
+	if len(lines) < 12:
+		raise ParserFail("NGF load error: file too short");
+
+	# ---------------------------------------------------------------------------------------------
+
+	try:
+		boardsize = int(lines[1])
+	except:
+		boardsize = 19;
+
+	# ---------------------------------------------------------------------------------------------
+
+	pw = ""
+	pb = ""
+
+	pw_fields = bytes_to_fields(lines[2])
+	pb_fields = bytes_to_fields(lines[3])
+
+	if len(pw_fields) > 0 and "�" not in pw_fields[0]:
+		pw = pw_fields[0]
+
+	if len(pb_fields) > 0 and "�" not in pb_fields[0]:
+		pb = pb_fields[0]
+
+	# ---------------------------------------------------------------------------------------------
+
+	try:
+		handicap = int(lines[5])
+	except:
+		handicap = 0
+
+	if handicap < 0 or handicap > 9:
+		raise ParserFail("NGF load error: bad handicap")
+
+	# ---------------------------------------------------------------------------------------------
+
+	try:
+		komi = float(lines[7])
+		if komi == int(komi):
+			komi += 0.5
+	except:
+		komi = 0
+
+	# ---------------------------------------------------------------------------------------------
+
+	rawdate = ""
+
+	if len(lines[8]) >= 8:
+		rawdate = lines[8].decode(encoding="utf-8", errors="replace")[0:8]
+
+	# ---------------------------------------------------------------------------------------------
+
+	re = "";
+	margin = "";
+
+	result_lower = lines[10].decode(encoding="utf-8", errors="replace").lower()
+
+	if "black win" in result_lower or "white los" in result_lower:
+		re = "B+"
+	if "white win" in result_lower or "black los" in result_lower:
+		re = "W+"
+	if "resign" in result_lower:
+		margin = "R"
+	if "time" in result_lower:
+		margin = "T"
+
+	if re != "":
+		re += margin
+
+	# ---------------------------------------------------------------------------------------------
+
+	root = Node(None)
+	node = root
+
+	root.set("SZ", boardsize);
+	root.set("RU", "Korean");
+	root.set("KM", komi);
+
+	if handicap > 1:
+		root.set("HA", handicap);
+		for s in handicap_stones(handicap, boardsize, boardsize, True):
+			root.add_value("AB", s)
+
+	if len(rawdate) == 8:
+		ok = True
+		for n in range(8):
+			if rawdate[n] < "0" or rawdate[n] > "9":
+				ok = False
+		if ok:
+			root.set("DT", rawdate[0:4] + "-" + rawdate[4:6] + "-" + rawdate[6:8])
+
+	if pw:
+		root.set("PW", pw)
+	if pb:
+		root.set("PB", pb)
+	if re:
+		root.set("RE", re)
+
+	for line in lines:
+
+		line = line.upper().strip()
+
+		if len(line) < 7:
+			continue
+
+		if line[0:2] == b"PM":
+
+			if line[4] == ord("B") or line[4] == ord("W"):
+
+				key = chr(line[4])
+
+				x = line[5] - 66
+				y = line[6] - 66
+
+				node = Node(node);
+
+				if x >= 0 and x < boardsize and y >= 0 and y < boardsize:
+					node.set(key, xy_to_s(x, y))
+				else:
+					node.set(key, "")		# Pass
+
+	if len(root.children) == 0:
+		raise ParserFail("NGF load error: got no moves")
+
+	return [root]
 
