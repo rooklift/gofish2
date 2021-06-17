@@ -750,7 +750,7 @@ def _load_sgf_recursive(buf, off, parent_of_local_root):
 
 def load_ngf(buf):
 
-	lines = [z.decode(encoding="utf-8", errors="replace") for z in buf.split(b"\n")]
+	lines = [z.decode(encoding="utf-8", errors="replace").strip() for z in buf.split(b"\n")]
 
 	if len(lines) < 12:
 		raise ParserFail("NGF load error: File too short")
@@ -854,7 +854,7 @@ def load_ngf(buf):
 
 	for line in lines:
 
-		line = line.upper().strip()
+		line = line.upper()
 
 		if len(line) < 7:
 			continue
@@ -883,7 +883,7 @@ def load_ngf(buf):
 
 def load_gib(buf):
 
-	lines = buf.split(b"\n")
+	lines = [z.decode(encoding="utf-8", errors="replace").strip() for z in buf.split(b"\n")]
 
 	root = Node()
 	node = root
@@ -893,8 +893,6 @@ def load_gib(buf):
 	root.set("KM", 0)								# Can get adjusted in a moment.
 
 	for line in lines:
-
-		line = line.decode(encoding="utf-8", errors="replace").strip()
 
 		# Game info...
 
