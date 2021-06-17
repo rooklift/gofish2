@@ -748,10 +748,6 @@ def _load_sgf_recursive(buf, off, parent_of_local_root):
 	raise ParserFail("SGF load error: Reached end of input")
 
 
-def bytes_to_fields(buf):	# Split bytes, returning strings and filtering out empty strings (though maybe that is done by the split() anyway?)
-	return [z.decode(encoding="utf-8", errors="replace") for z in buf.split() if z != b""]
-
-
 def load_ngf(buf):
 
 	lines = buf.split(b"\n")
@@ -771,14 +767,18 @@ def load_ngf(buf):
 	pw = ""
 	pb = ""
 
-	pw_fields = bytes_to_fields(lines[2])
-	pb_fields = bytes_to_fields(lines[3])
+	pw_fields = lines[2].split()
+	pb_fields = lines[3].split()
 
-	if len(pw_fields) > 0 and "�" not in pw_fields[0]:
-		pw = pw_fields[0]
+	if len(pw_fields) > 0:
+		dec = pw_fields[0].decode(encoding="utf-8", errors="replace")
+		if "�" not in dec:
+			pw = dec
 
-	if len(pb_fields) > 0 and "�" not in pb_fields[0]:
-		pb = pb_fields[0]
+	if len(pb_fields) > 0:
+		dec = pb_fields[0].decode(encoding="utf-8", errors="replace")
+		if "�" not in dec:
+			pb = dec
 
 	# ---------------------------------------------------------------------------------------------
 
