@@ -4,3 +4,4 @@ test.py
 file_info.py
 *.sgf
 *.ngf
+*.gib
