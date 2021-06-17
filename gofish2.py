@@ -948,7 +948,7 @@ def load_gib(buf):
 				pass
 
 	if len(root.children) == 0:
-		raise ParserFail("GIB load error: got no moves");
+		raise ParserFail("GIB load error: got no moves")
 
 	return [root]
 
@@ -1017,4 +1017,4 @@ def parse_gib_gametag(line):
 		if zipsu > 0:
 			re += str(zipsu / 10)
 
-	return [dt, re, km, pb, pw];
+	return [dt, re, km, pb, pw]
