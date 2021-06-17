@@ -750,10 +750,10 @@ def _load_sgf_recursive(buf, off, parent_of_local_root):
 
 def load_ngf(buf):
 
-	lines = buf.split(b"\n")
+	lines = [z.decode(encoding="utf-8", errors="replace") for z in buf.split(b"\n")]
 
 	if len(lines) < 12:
-		raise ParserFail("NGF load error: file too short")
+		raise ParserFail("NGF load error: File too short")
 
 	# ---------------------------------------------------------------------------------------------
 
@@ -771,14 +771,12 @@ def load_ngf(buf):
 	pb_fields = lines[3].split()
 
 	if len(pw_fields) > 0:
-		dec = pw_fields[0].decode(encoding="utf-8", errors="replace")
-		if "�" not in dec:
-			pw = dec
+		if "�" not in pw_fields[0]:
+			pw = pw_fields[0]
 
 	if len(pb_fields) > 0:
-		dec = pb_fields[0].decode(encoding="utf-8", errors="replace")
-		if "�" not in dec:
-			pb = dec
+		if "�" not in pb_fields[0]:
+			pb = pb_fields[0]
 
 	# ---------------------------------------------------------------------------------------------
 
@@ -788,7 +786,7 @@ def load_ngf(buf):
 		handicap = 0
 
 	if handicap < 0 or handicap > 9:
-		raise ParserFail("NGF load error: bad handicap")
+		raise ParserFail("NGF load error: Bad handicap")
 
 	# ---------------------------------------------------------------------------------------------
 
@@ -804,14 +802,14 @@ def load_ngf(buf):
 	rawdate = ""
 
 	if len(lines[8]) >= 8:
-		rawdate = lines[8].decode(encoding="utf-8", errors="replace")[0:8]
+		rawdate = lines[8][0:8]
 
 	# ---------------------------------------------------------------------------------------------
 
 	re = ""
 	margin = ""
 
-	result_lower = lines[10].decode(encoding="utf-8", errors="replace").lower()
+	result_lower = lines[10].lower()
 
 	if "black win" in result_lower or "white los" in result_lower:
 		re = "B+"
@@ -827,7 +825,7 @@ def load_ngf(buf):
 
 	# ---------------------------------------------------------------------------------------------
 
-	root = Node(None)
+	root = Node()
 	node = root
 
 	root.set("SZ", boardsize)
@@ -861,14 +859,14 @@ def load_ngf(buf):
 		if len(line) < 7:
 			continue
 
-		if line[0:2] == b"PM":
+		if line[0:2] == "PM":
 
-			if line[4] == ord("B") or line[4] == ord("W"):
+			if line[4] == "B" or line[4] == "W":
 
-				key = chr(line[4])
+				key = line[4]
 
-				x = line[5] - 66
-				y = line[6] - 66
+				x = ord(line[5]) - 66
+				y = ord(line[6]) - 66
 
 				node = Node(node)
 
@@ -878,7 +876,145 @@ def load_ngf(buf):
 					node.set(key, "")		# Pass
 
 	if len(root.children) == 0:
-		raise ParserFail("NGF load error: got no moves")
+		raise ParserFail("NGF load error: Got no moves")
 
 	return [root]
 
+
+def load_gib(buf):
+
+	lines = buf.split(b"\n")
+
+	root = Node()
+	node = root
+
+	root.set("SZ", 19)								# Is this always so?
+	root.set("RU", "Korean")
+	root.set("KM", 0)								# Can get adjusted in a moment.
+
+	for line in lines:
+
+		line = line.decode(encoding="utf-8", errors="replace").strip()
+
+		# Game info...
+
+		if line.startswith("\\[GAMETAG="):
+
+			dt, re, km, pb, pw = parse_gib_gametag(line)
+
+			if dt:
+				root.set("DT", dt)
+			if re:
+				root.set("RE", re)
+			if km:
+				root.set("KM", km)
+
+			if pb and "�" not in pb:
+				root.set("PB", pb)
+			if pw and "�" not in pw:
+				root.set("PW", pw)
+
+		# Split the line into tokens for the handicap and move parsing...
+
+		fields = line.split()
+
+		# Handicap...
+
+		if len(fields) >= 4 and fields[0] == "INI":
+
+			if node != root:
+				raise ParserFail("GIB load error: Got INI after moves were made")
+
+			try:
+				handicap = int(fields[3])
+				if handicap > 1:
+					root.set("HA", handicap)
+					for s in handicap_stones(handicap, 19, 19, True):
+						root.add_value("AB", s)
+			except:
+				pass
+
+		# Moves...
+
+		if len(fields) >= 6 and fields[0] == "STO":
+
+			try:
+				x = int(fields[4])
+				y = int(fields[5])
+				key = "W" if fields[3] == "2" else "B"
+				node = Node(node)
+				node.set(key, xy_to_s(x, y))
+			except:
+				pass
+
+	if len(root.children) == 0:
+		raise ParserFail("GIB load error: got no moves");
+
+	return [root]
+
+
+def parse_gib_gametag(line):
+
+	fields = [z.strip() for z in line.split(",")]
+
+	dt = ""
+	re = ""
+	km = ""
+	pb = ""
+	pw = ""
+
+	zipsu = 0
+
+	for s in fields:
+
+		if len(s) < 2:
+			continue
+
+		if s[0:2] == "A:":
+			pw = s[2:]
+
+		if s[0:2] == "B:":
+			pb = s[2:]
+
+		if s[0] == "C":
+			dt = s[1:]
+			if len(dt) > 10:
+				dt = dt[0:10]
+			dt = dt.replace(":", "-")
+
+		if s[0] == "W":
+			try:
+				grlt = int(s[1:])
+				if grlt == 0:
+					re = "B+"
+				elif grlt == 1:
+					re = "W+"
+				elif grlt == 3:
+					re = "B+R"
+				elif grlt == 4:
+					re = "W+R"
+				elif grlt == 7:
+					re = "B+T"
+				elif grlt == 8:
+					re = "W+T"
+			except:
+				pass
+
+		if s[0] == "G":
+			try:
+				gongje = int(s[1:])
+				km = str(gongje / 10)
+			except:
+				pass
+
+		if s[0] == "Z":
+			try:
+				zipsu = int(s[1:])
+			except:
+				pass
+
+	if re == "B+" or re == "W+":
+		if zipsu > 0:
+			re += str(zipsu / 10)
+
+	return [dt, re, km, pb, pw];
