@@ -11,4 +11,3 @@ Replacement for the original [gofish](https://github.com/rooklift/gofish) librar
 
 * Board caching.
 * Any simple way to make moves.
-* File formats other than SGF.
