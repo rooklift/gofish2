@@ -388,6 +388,7 @@ class Node:
 
 		key = str(key)
 		value = str(value)
+		self._mutor_check(key)
 
 		self.props[key] = [value]
 
@@ -417,6 +418,7 @@ class Node:
 
 		key = str(key)
 		value = str(value)
+		self._mutor_check(key)
 
 		if key not in self.props:
 			self.props[key] = []
@@ -433,6 +435,8 @@ class Node:
 	def delete_key(self, key):
 
 		key = str(key)
+		self._mutor_check(key)
+
 		self.props.pop(key, None)
 
 
@@ -520,6 +524,30 @@ class Node:
 
 	def tree_size(self):
 		return self.get_root().subtree_size()
+
+
+	def _mutor_check(self, key):	# If we had board caches, these properties would require a recursive cache clear
+
+		if key in ["B", "W", "AB", "AW", "AE", "PL", "SZ"]:
+			self._clear_board_recursive()
+
+
+	def _clear_board_recursive(self):
+
+		node = self
+
+		while True:
+
+			node.__board = None
+
+			if len(node.children) == 0:
+				break
+			elif len(node.children) == 1:
+				node = node.children[0]
+			else:
+				for child in node.children:
+					child._clear_board_recursive()
+				break
 
 # -------------------------------------------------------------------------------------------------
 
