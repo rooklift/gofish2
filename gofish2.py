@@ -3,6 +3,9 @@
 class ParserFail(Exception):
 	pass
 
+class IllegalMove(Exception):
+	pass
+
 class ParseResult:
 	def __init__(self, root, readcount):
 		self.root = root
@@ -322,13 +325,13 @@ class Node:
 			board.active = "w"
 
 
-	def make_board(self):
+	def _cache_board(self):
 
 		# As it stands, this only causes the board to exist in this node, and has no
 		# other side effects (i.e. boards in ancestor nodes are not caused to exist).
 
 		if self._board:
-			return self._board.copy()
+			return
 
 		node = self
 		history = []
@@ -352,6 +355,10 @@ class Node:
 
 		self._board = board
 
+
+	def make_board(self):
+
+		self._cache_board()
 		return self._board.copy()
 
 
@@ -524,6 +531,42 @@ class Node:
 
 	def tree_size(self):
 		return self.get_root().subtree_size()
+
+
+	def make_move(self, s):			# This method cannot be used for passing
+
+		self._cache_board()
+
+		if not self._board.legal_move(s):
+			raise IllegalMove
+
+		colourkey = self._board.active.upper()
+
+		for node in self.children:
+			if node.get(colourkey) == s:
+				return node
+
+		node = Node(self)
+		node.set(colourkey, s)
+
+		return node
+
+
+	def make_pass(self):
+
+		self._cache_board()
+		colourkey = self._board.active.upper()
+
+		for node in self.children:
+			foo = node.get(colourkey);
+			if foo != None:
+				if self.validated_move_string(foo) == "":
+					return node
+
+		node = Node(self)
+		node.set(colourkey, "")
+
+		return node
 
 
 	def _mutor_check(self, key):	# If we had board caches, these properties would require a recursive cache clear
