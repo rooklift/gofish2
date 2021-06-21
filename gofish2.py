@@ -244,6 +244,7 @@ class Node:
 		self.parent = parent
 		self.children = []
 		self.props = dict()
+		self.__board = None
 
 		if parent:
 			parent.children.append(self)
@@ -251,6 +252,9 @@ class Node:
 
 	@property
 	def width(self):
+
+		if self.__board:
+			return self.__board.width
 
 		root = self.get_root()
 		sz = root.get("SZ")
@@ -271,6 +275,9 @@ class Node:
 
 	@property
 	def height(self):
+
+		if self.__board:
+			return self.__board.height
 
 		root = self.get_root()
 		sz = root.get("SZ")
@@ -317,14 +324,35 @@ class Node:
 
 	def make_board(self):
 
-		history = self.history()
+		# As it stands, this only causes the board to exist in this node, and has no
+		# other side effects (i.e. boards in ancestor nodes are not caused to exist).
 
-		board = Board(history[0].width, history[0].height)
+		if self.__board:
+			return self.__board.copy()
 
-		for node in history:
+		node = self
+		history = []
+
+		while node:
+			history.append(node)
+			if node.__board:
+				break
+			node = node.parent
+
+		history.reverse()
+
+		if history[0].__board:
+			board = history[0].__board.copy()
+		else:
+			board = Board(history[0].width, history[0].height)		# In this case history[0] is the root.
+			history[0].apply(board)
+
+		for node in history[1:]:
 			node.apply(board)
 
-		return board
+		self.__board = board
+
+		return self.__board.copy()
 
 
 	def get_root(self):
