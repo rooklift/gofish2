@@ -34,6 +34,20 @@ class Board:
 					self.state[x].append("")
 
 
+	def __eq__(self, other):
+		if self.width != other.width or self.height != other.height:
+			return False
+		if self.ko != other.ko or self.active != other.active:
+			return False
+		if self.caps_by_b != other.caps_by_b or self.caps_by_w != other.caps_by_w:
+			return False
+		for x in range(self.width):
+			for y in range(self.height):
+				if self.state[x][y] != other.state[x][y]:
+					return False
+		return True
+
+
 	def copy(self):
 		return Board(self.width, self.height, self.state, self.ko, self.active, self.caps_by_b, self.caps_by_w)
 
