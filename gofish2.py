@@ -294,7 +294,7 @@ class Node:
 			height_string = sz
 
 		try:
-			return min(height_string, 52)
+			return min(int(height_string), 52)
 		except:
 			return 19
 
