@@ -358,7 +358,7 @@ class Node:
 
 		history.reverse()
 
-		if history[0]._board:
+		if history[0]._board:					# This code branch is needed, because history[0] might not be the root.
 			board = history[0]._board.copy()
 		else:
 			board = Board(history[0].width, history[0].height)		# In this case history[0] is the root.
