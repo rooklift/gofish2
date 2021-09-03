@@ -583,7 +583,7 @@ class Node:
 		return node
 
 
-	def _mutor_check(self, key):	# If we had board caches, these properties would require a recursive cache clear
+	def _mutor_check(self, key):	# With board caches, these properties require a recursive cache clear
 
 		if key in ["B", "W", "AB", "AW", "AE", "PL", "SZ"]:
 			self._clear_board_recursive()
