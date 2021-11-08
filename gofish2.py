@@ -341,7 +341,7 @@ class Node:
 
 	def _cache_board(self):
 
-		# ALso caches the entire history (not doing so is silly, I guess).
+		# Also caches the entire history (not doing so is silly, I guess).
 
 		if self._board:
 			return
