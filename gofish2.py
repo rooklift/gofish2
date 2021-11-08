@@ -341,8 +341,7 @@ class Node:
 
 	def _cache_board(self):
 
-		# As it stands, this only causes the board to exist in this node, and has no
-		# other side effects (i.e. boards in ancestor nodes are not caused to exist).
+		# ALso caches the entire history (not doing so is silly, I guess).
 
 		if self._board:
 			return
@@ -366,8 +365,7 @@ class Node:
 
 		for node in history:
 			node.apply(work_board)
-
-		self._board = work_board
+			node._board = work_board.copy()
 
 
 	def make_board(self):
