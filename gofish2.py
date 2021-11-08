@@ -608,9 +608,9 @@ class Node:
 
 # -------------------------------------------------------------------------------------------------
 
-def s_to_xy(s):
+def s_to_xy(s):						# "cc" --> 2,2
 
-	if not isinstance(s, str):
+	if not isinstance(s, str):		# Allows None to be used as an argument (e.g. some of our ko code uses this fact)
 		return (-1, -1)
 
 	if len(s) != 2:
@@ -636,7 +636,7 @@ def s_to_xy(s):
 	return (x, y)
 
 
-def xy_to_s(x, y):
+def xy_to_s(x, y):					# 2,2 --> "cc"
 
 	if x < 0 or x >= 52 or y < 0 or y >= 52:
 		return ""
@@ -656,7 +656,39 @@ def xy_to_s(x, y):
 	return s
 
 
-def safe_string(s):     				# "safe" meaning safely escaped \ and ] characters
+def english_to_xy(e, height = 19, i_adjust = True):		# "Q16"     --->    15,3
+
+	if not isinstance(e, str):
+		return (-1, -1)
+
+	if len(e) != 2 and len(e) != 3:
+		return (-1, -1)
+
+	e = e.upper()
+
+	if e[0] not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+		return (-1, -1)
+
+	x = ord(e[0]) - 65
+
+	if i_adjust:
+		if e[0] == "I":
+			raise ValueError
+		if x > 7:
+			x -= 1
+
+	try:
+		y = height - int(e[1:])
+	except:
+		return (-1, -1)
+
+	if y < 0 or y >= height:
+		return (-1, -1)
+
+	return (x, y)
+
+
+def safe_string(s):     			# "safe" meaning safely escaped \ and ] characters
 	s = s.replace("\\", "\\\\")
 	s = s.replace("]", "\\]")
 	return s
