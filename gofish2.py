@@ -349,25 +349,25 @@ class Node:
 
 		node = self
 		history = []
+		work_board = None
 
 		while node:
-			history.append(node)
 			if node._board:
+				work_board = node._board.copy()
 				break
-			node = node.parent
+			else:
+				history.append(node)
+				node = node.parent
 
 		history.reverse()
 
-		if history[0]._board:					# This code branch is needed, because history[0] might not be the root.
-			board = history[0]._board.copy()
-		else:
-			board = Board(history[0].width, history[0].height)		# In this case history[0] is the root.
-			history[0].apply(board)
+		if not work_board:
+			work_board = Board(self.width, self.height)
 
-		for node in history[1:]:
-			node.apply(board)
+		for node in history:
+			node.apply(work_board)
 
-		self._board = board
+		self._board = work_board
 
 
 	def make_board(self):
