@@ -183,12 +183,12 @@ class Board:
 			if self.state_at(neighbour) == colour:
 				touched = dict()
 				touched[s] = True
-				if self.has_liberties_recurse(neighbour, touched):
+				if self._has_liberties_recurse(neighbour, touched):
 					return True					# One of the groups we're joining has a liberty other than s.
 			elif self.state_at(neighbour) == opposite_colour:
 				touched = dict()
 				touched[s] = True
-				if not self.has_liberties_recurse(neighbour, touched):
+				if not self._has_liberties_recurse(neighbour, touched):
 					return True					# One of the enemy groups has no liberties other than s.
 
 		return False
