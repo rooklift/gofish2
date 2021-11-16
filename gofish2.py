@@ -54,7 +54,10 @@ class Board:
 
 	def dump(self):
 
-		ko_x, ko_y = s_to_xy(self.ko)
+		if self.ko:
+			ko_x, ko_y = s_to_xy(self.ko)
+		else:
+			ko_x, ko_y = None, None
 
 		for y in range(0, self.height):
 			for x in range(0, self.width):
@@ -67,24 +70,35 @@ class Board:
 
 
 	def state_at(self, s):
+
 		x, y = s_to_xy(s)
-		if x >= 0 and x < self.width and y >= 0 and y < self.height:
-			return self.state[x][y]
-		else:
-			return ""
+
+		if x < 0 or x >= self.width or y < 0 or y >= self.height:
+			raise ValueError		# s was out of bounds
+
+		return self.state[x][y]
 
 
 	def set_at(self, s, colour):
-		assert(colour == "b" or colour == "w" or colour == "")
+
+		if colour not in ["", "b", "w"]:
+			raise ValueError
+
 		x, y = s_to_xy(s)
-		if x >= 0 and x < self.width and y >= 0 and y < self.height:
-			self.state[x][y] = colour
+
+		if x < 0 or x >= self.width or y < 0 or y >= self.height:
+			raise ValueError		# s was out of bounds
+
+		self.state[x][y] = colour
 
 
 	def neighbours(self, s):
+
 		x, y = s_to_xy(s)
+
 		if x < 0 or x >= self.width or y < 0 or y >= self.height:
-			return []
+			raise ValueError		# s was out of bounds
+
 		ret = []
 		if x < self.width - 1:
 			ret.append(xy_to_s(x + 1, y))
@@ -160,7 +174,10 @@ class Board:
 
 		assert(colour == "b" or colour == "w")
 
-		x, y = s_to_xy(s)
+		try:
+			x, y = s_to_xy(s)
+		except:
+			return False						# s_to_xy() can throw for many reasons, but this function has to be more tolerant.
 
 		if x < 0 or x >= self.width or y < 0 or y >= self.height:
 			return False
@@ -201,7 +218,10 @@ class Board:
 		self.ko = None
 		self.active = "b" if colour == "w" else "w"
 
-		x, y = s_to_xy(s)
+		try:
+			x, y = s_to_xy(s)
+		except:
+			return					# s was invalid in some way; treat as a pass.
 
 		if x < 0 or x >= self.width or y < 0 or y >= self.height:
 			return					# Treat as a pass.
@@ -608,11 +628,11 @@ class Node:
 
 def s_to_xy(s):						# "cc" --> 2,2
 
-	if not isinstance(s, str):		# Allows None to be used as an argument (e.g. some of our ko code uses this fact)
-		return (-1, -1)
+	if not isinstance(s, str):
+		raise TypeError
 
 	if len(s) != 2:
-		return (-1, -1)
+		raise ValueError
 
 	x_ascii = ord(s[0])
 	y_ascii = ord(s[1])
@@ -622,14 +642,14 @@ def s_to_xy(s):						# "cc" --> 2,2
 	elif x_ascii >= 65 and x_ascii <= 90:
 		x = x_ascii - 65 + 26
 	else:
-		return (-1, -1)
+		raise ValueError
 
 	if y_ascii >= 97 and y_ascii <= 122:
 		y = y_ascii - 97
 	elif y_ascii >= 65 and y_ascii <= 90:
 		y = y_ascii - 65 + 26
 	else:
-		return (-1, -1)
+		raise ValueError
 
 	return (x, y)
 
@@ -637,7 +657,7 @@ def s_to_xy(s):						# "cc" --> 2,2
 def xy_to_s(x, y):					# 2,2 --> "cc"
 
 	if x < 0 or x >= 52 or y < 0 or y >= 52:
-		return ""
+		raise ValueError
 
 	s = ""
 
@@ -657,15 +677,15 @@ def xy_to_s(x, y):					# 2,2 --> "cc"
 def english_to_xy(e, height = 19, i_adjust = True):		# "Q16"     --->    15,3
 
 	if not isinstance(e, str):
-		return (-1, -1)
+		raise TypeError
 
 	if len(e) != 2 and len(e) != 3:
-		return (-1, -1)
+		raise ValueError
 
 	e = e.upper()
 
 	if e[0] not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-		return (-1, -1)
+		raise ValueError
 
 	x = ord(e[0]) - 65
 
@@ -678,10 +698,10 @@ def english_to_xy(e, height = 19, i_adjust = True):		# "Q16"     --->    15,3
 	try:
 		y = height - int(e[1:])
 	except:
-		return (-1, -1)
+		raise ValueError
 
 	if y < 0 or y >= height:
-		return (-1, -1)
+		raise ValueError
 
 	return (x, y)
 
