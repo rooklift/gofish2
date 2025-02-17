@@ -442,7 +442,7 @@ class Node:
 
 
 	def has_key(self, key):
-		
+
 		return str(key) in self.props
 
 
