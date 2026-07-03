@@ -871,7 +871,14 @@ def _load_sgf_recursive(buf, off, parent_of_local_root):
 
 		else:
 
-			if c <= 32 or (c >= 97 and c <= 122):		# a-z
+			if c <= 32:								# whitespace
+				continue
+			elif c >= 97 and c <= 122:				# a-z
+				# Lowercase ASCII is normally discarded. If a property value has
+				# already completed, however, it marks the start of a new key.
+				if keycomplete:
+					key = bytearray()
+					keycomplete = False
 				continue
 			elif c == 91:								# [
 				if not node:
