@@ -332,7 +332,7 @@ class Node:
 			return 19
 
 
-	def apply(self, board):
+	def apply(self, board):						# FIXME: doesn't accept compressed point lists.
 
 		for s in self.all_values("AE"):
 			board.set_at(s, "")
