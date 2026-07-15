@@ -111,59 +111,58 @@ class Board:
 		return ret
 
 
+	def has_liberties(self, s):
+
+		if not self.state_at(s):
+			return False
+
+		return self._has_liberties_bfs(s)
+
+
+	def _has_liberties_bfs(self, s, touched = None):
+
+		colour = self.state_at(s)
+
+		todo = [s]
+
+		if not touched:
+			touched = set()
+		touched.add(s)
+
+		for p in todo:		# Note: it's safe to iterate over a list that's getting appends like this is.
+			for neighbour in self.neighbours(p):
+				if neighbour not in touched:
+					neighbour_colour = self.state_at(neighbour)
+					if neighbour_colour == "":
+						return True
+					elif neighbour_colour == colour:
+						todo.append(neighbour)
+						touched.add(neighbour)
+
+		return False
+
+
 	def destroy_group(self, s):
 
 		colour = self.state_at(s)
 		if not colour:
 			return 0
 
+		todo = [s]
 		self.set_at(s, "")
 
+		for p in todo:		# Note: it's safe to iterate over a list that's getting appends like this is.
+			for neighbour in self.neighbours(p):
+				if self.state_at(neighbour) == colour:
+					todo.append(neighbour)
+					self.set_at(neighbour, "")
+
 		if colour == "b":
-			self.caps_by_w += 1
+			self.caps_by_w += len(todo)
 		else:
-			self.caps_by_b += 1
+			self.caps_by_b += len(todo)
 
-		caps = 1
-
-		for neighbour in self.neighbours(s):
-			if self.state_at(neighbour) == colour:
-				caps += self.destroy_group(neighbour)
-
-		return caps
-
-
-	def has_liberties(self, s):
-
-		if not self.state_at(s):
-			return False
-
-		touched = dict()
-
-		return self._has_liberties_recurse(s, touched)
-
-
-	def _has_liberties_recurse(self, s, touched):
-
-		touched[s] = True
-
-		colour = self.state_at(s)
-
-		for neighbour in self.neighbours(s):
-
-			if neighbour in touched:
-				continue
-
-			neighbour_colour = self.state_at(neighbour)
-
-			if not neighbour_colour:
-				return True
-
-			if neighbour_colour == colour:
-				if self._has_liberties_recurse(neighbour, touched):
-					return True
-
-		return False
+		return len(todo)
 
 
 	def legal_move(self, s):
@@ -198,14 +197,14 @@ class Board:
 
 		for neighbour in neighbours:
 			if self.state_at(neighbour) == colour:
-				touched = dict()
-				touched[s] = True
-				if self._has_liberties_recurse(neighbour, touched):
+				touched = set()
+				touched.add(s)
+				if self._has_liberties_bfs(neighbour, touched):
 					return True					# One of the groups we're joining has a liberty other than s.
 			elif self.state_at(neighbour) == opposite_colour:
-				touched = dict()
-				touched[s] = True
-				if not self._has_liberties_recurse(neighbour, touched):
+				touched = set()
+				touched.add(s)
+				if not self._has_liberties_bfs(neighbour, touched):
 					return True					# One of the enemy groups has no liberties other than s.
 
 		return False
@@ -595,9 +594,8 @@ class Node:
 		colourkey = self._board.active.upper()
 
 		for node in self.children:
-			foo = node.get(colourkey);
-			if foo != None:
-				if self.validated_move_string(foo) == "":
+			if node.has_key(colourkey):
+				if self.validated_move_string(node.get(colourkey)) == "":
 					return node
 
 		node = Node(self)
