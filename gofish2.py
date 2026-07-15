@@ -332,24 +332,58 @@ class Node:
 			return 19
 
 
-	def apply(self, board):						# FIXME: doesn't accept compressed point lists.
+	def apply(self, board):
 
 		for s in self.all_values("AE"):
-			board.set_at(s, "")
+			if len(s) == 5:
+				for z in points_list(s):
+					try:
+						board.set_at(z, "")
+					except:
+						pass
+			else:
+				try:
+					board.set_at(s, "")
+				except:
+					pass
 
 		for s in self.all_values("AB"):
-			board.set_at(s, "b")
-			board.active = "w"
+			if len(s) == 5:
+				for z in points_list(s):
+					try:
+						board.set_at(z, "b")
+					except:
+						pass
+			else:
+				try:
+					board.set_at(s, "b")
+				except:
+					pass
+			# board.active = "w"				# We likely shouldn't do this.
 
 		for s in self.all_values("AW"):
-			board.set_at(s, "w")
-			board.active = "b"
+			if len(s) == 5:
+				for z in points_list(s):
+					try:
+						board.set_at(z, "w")
+					except:
+						pass
+			else:
+				try:
+					board.set_at(s, "w")
+				except:
+					pass
+			# board.active = "b"				# We likely shouldn't do this.
 
 		for s in self.all_values("B"):
 			board.play_move_or_pass(s, "b")		# Will treat s as a pass if it's not a valid move.
 
 		for s in self.all_values("W"):
 			board.play_move_or_pass(s, "w")		# Will treat s as a pass if it's not a valid move.
+
+		if not self.parent:
+			if self.has_key("AB") and not self.has_key("AW") and not self.has_key("B") and not self.has_key("W"):
+				board.active = "w"
 
 		pl = self.get("PL")
 		if pl == "B" or pl == "b":
@@ -748,6 +782,38 @@ def handicap_stones(count, width, height, tygem = False):
 		]
 
 	return [xy_to_s(z[0], z[1]) for z in stones[0:count]]
+
+
+def points_list(s):
+
+	if len(s) == 2:
+		return [s]
+
+	if len(s) != 5 or s[2] != ":":
+		return []
+
+	x1 = ord(s[0]) - 97
+	y1 = ord(s[1]) - 97
+	x2 = ord(s[3]) - 97
+	y2 = ord(s[4]) - 97
+
+	if x1 > x2:
+		x1, x2 = x2, x1
+
+	if y1 > y2:
+		y1, y2 = y2, y1
+
+	ret = []
+
+	for x in range(x1, x2 + 1):
+		for y in range(y1, y2 + 1):
+			try:
+				z = xy_to_s(x, y)
+			except:
+				continue
+			ret.append(z)
+
+	return ret
 
 # -------------------------------------------------------------------------------------------------
 
