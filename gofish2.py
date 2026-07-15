@@ -792,10 +792,11 @@ def points_list(s):
 	if len(s) != 5 or s[2] != ":":
 		return []
 
-	x1 = ord(s[0]) - 97
-	y1 = ord(s[1]) - 97
-	x2 = ord(s[3]) - 97
-	y2 = ord(s[4]) - 97
+	try:
+		x1, y1 = s_to_xy(s[0:2])
+		x2, y2 = s_to_xy(s[3:5])
+	except:
+		return []
 
 	if x1 > x2:
 		x1, x2 = x2, x1
