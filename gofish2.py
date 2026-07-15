@@ -125,7 +125,7 @@ class Board:
 
 		todo = [s]
 
-		if not touched:
+		if touched == None:
 			touched = set()
 		touched.add(s)
 
