@@ -1110,11 +1110,12 @@ def load_gib(buf):
 		if len(fields) >= 6 and fields[0] == "STO":
 
 			try:
+				key = "W" if fields[3] == "2" else "B"
 				x = int(fields[4])
 				y = int(fields[5])
-				key = "W" if fields[3] == "2" else "B"
+				s = xy_to_s(x, y)		# Could throw, so do this in the try block BEFORE adding the new Node
 				node = Node(node)
-				node.set(key, xy_to_s(x, y))
+				node.set(key, s)
 			except:
 				pass
 
